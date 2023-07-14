@@ -45,6 +45,7 @@
     "babel-eslint": "^10.1.0",
     "babel-jest": "^27.4.6",
     "chalk": "^4.1.0",
+    "dedent": "^1.0.2",
     "eslint": "^8.6.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.25.4",
