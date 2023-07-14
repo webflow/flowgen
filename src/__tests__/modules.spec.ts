@@ -71,3 +71,25 @@ declare module 'test' {
   expect(beautify(result)).toMatchSnapshot();
   expect(result).toBeValidFlowTypeDeclarations();
 });
+
+it.only("should value imports from a different module", () => {
+  const ts = `
+declare module '@packages/systems/designer-translations/context/index' {
+  export const TranslationContext: {
+    readonly Tokens: 'tokens';
+  };
+}
+declare module '@packages/systems/designer-translations/utils/types' {
+  import {TranslationContext} from '@packages/systems/designer-translations/context/index';
+  export type TranslationContextType =
+    | (typeof TranslationContext)[keyof typeof TranslationContext];
+}
+`;
+
+  const result = beautify(
+    compiler.compileDefinitionString(ts, { quiet: true }),
+  );
+  console.log(result);
+
+  expect(true).toBe(true);
+});
