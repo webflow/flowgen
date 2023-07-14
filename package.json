@@ -7,7 +7,7 @@
   },
   "jest": {
     "testMatch": [
-      "**/__tests__/**/*.ts",
+      "**/__tests__/**/*.(spec|test).ts",
       "**/?(*.)+(spec|test).ts",
       "!**/*.d.ts"
     ]
@@ -66,8 +66,8 @@
     "type": "tsc -p tsconfig.declaration.json",
     "compile": "babel ./src --extensions '.ts,.tsx,.js' --out-dir lib --delete-dir-on-start --ignore 'src/**/*.spec.ts' --ignore 'src/__tests__/'",
     "compile:watch": "npm run compile -- -w",
-    "test": "jest src/**/*.spec.ts",
-    "test:watch": "jest src/**/*.spec.ts --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "lint": "eslint '**/*.{js,ts,tsx}' --quiet"
   }
 }
