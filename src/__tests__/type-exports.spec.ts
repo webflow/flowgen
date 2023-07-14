@@ -1,4 +1,4 @@
-import { compiler, beautify, flBeautify } from "..";
+import { compiler, beautify } from "..";
 import "../test-matchers";
 
 it("should handle exported types", () => {
@@ -18,7 +18,7 @@ it("should handle export list syntax", () => {
     const foo = 5;
     export { foo };
   `;
-  const fl = flBeautify(`
+  const flow = beautify(`
     declare type ComplexType = 
       | {
           type: number,
@@ -35,7 +35,7 @@ it("should handle export list syntax", () => {
 
   const result = compiler.compileDefinitionString(ts, { quiet: true });
 
-  expect(beautify(result)).toBe(fl);
+  expect(beautify(result)).toBe(flow);
   expect(result).toBeValidFlowTypeDeclarations();
 });
 
