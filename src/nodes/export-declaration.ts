@@ -1,6 +1,10 @@
 import type { RawNode } from "./node";
-import type { Expression, ExportDeclaration as RawExport } from "typescript";
-import { isNamespaceExport } from "typescript";
+import type {
+  ExportSpecifier,
+  Expression,
+  ExportDeclaration as RawExport,
+} from "typescript";
+import { isNamespaceExport, SyntaxKind } from "typescript";
 import * as printers from "../printers";
 import Node from "./node";
 
@@ -18,8 +22,6 @@ export default class ExportDeclaration extends Node<ExportDeclarationType> {
   print(): string {
     //TODO: move to printers
     if (this.raw.exportClause) {
-      const isTypeImport = this.raw.isTypeOnly;
-
       let specifier = "";
       if (this.raw.moduleSpecifier)
         specifier = `from '${this.raw.moduleSpecifier.text}';`;
@@ -30,11 +32,19 @@ export default class ExportDeclaration extends Node<ExportDeclarationType> {
 
       // split exports into type and value exports
       const rawElements = this.raw.exportClause.elements;
-      let typeExports, valueExports;
-      if (isTypeImport) {
-        typeExports = rawElements;
+      let typeExports: ExportSpecifier[];
+      let valueExports: ExportSpecifier[];
+
+      if (specifier.trim() !== "") {
+        // It's a re-export. Use `declare export` without the `type` keyword
+        typeExports = [];
+        valueExports = Array.from(rawElements);
+      } else if (this.raw.isTypeOnly) {
+        // They're all type exports:
+        typeExports = Array.from(rawElements);
         valueExports = [];
       } else {
+        // Mixed type and value exports:
         typeExports = [];
         valueExports = [];
         let nextIsType = false;
@@ -42,7 +52,7 @@ export default class ExportDeclaration extends Node<ExportDeclarationType> {
           if (nextIsType) {
             typeExports.push(node);
             nextIsType = false;
-          } else if (node.name.originalKeywordKind === 150) {
+          } else if (node.name.originalKeywordKind === SyntaxKind.TypeKeyword) {
             nextIsType = true;
           } else {
             valueExports.push(node);
@@ -50,7 +60,7 @@ export default class ExportDeclaration extends Node<ExportDeclarationType> {
         }
       }
 
-      const generateOutput = (prefix, elems) => {
+      const generateOutput = (prefix: string, elems: ExportSpecifier[]) => {
         return `${prefix} {
           ${elems.map(node => printers.node.printType(node))}
         }${specifier}\n`;
