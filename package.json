@@ -65,7 +65,7 @@
   "scripts": {
     "prepublishOnly": "npm run compile & npm run type",
     "type": "tsc -p tsconfig.declaration.json",
-    "compile": "babel ./src --extensions '.ts,.tsx,.js' --out-dir lib --delete-dir-on-start --ignore 'src/**/*.spec.ts' --ignore 'src/__tests__/'",
+    "compile": "babel ./src --extensions '.ts,.tsx,.js' --out-dir lib --delete-dir-on-start --ignore 'src/**/*.spec.ts' --ignore 'src/__tests__/' && yarn type",
     "compile:watch": "npm run compile -- -w",
     "test": "jest",
     "test:watch": "jest --watch",

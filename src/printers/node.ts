@@ -808,6 +808,27 @@ export const printType = withEnv<any, [any], string>(
       case ts.SyntaxKind.TypeQuery: {
         //$todo some weird union errors
         const symbol = checker.current.getSymbolAtLocation(type.exprName);
+
+        const importSpecifierDeclaration = checker.current
+          .getSymbolAtLocation(type.exprName)
+          ?.getDeclarations()[0];
+
+        // TypeScript d.ts can import _values_ from another module, and to get
+        // the type of that value you then use `typeof`. Flow declarations, on
+        // the other hand, CANNOT import _values_. When a file imports a value,
+        // the associated flow declaration includes `type` on the `import` – ie,
+        // the import is ALREADY a type. Because of this we cannot then call
+        // `typeof` on the imported symbol.
+        // The below conditional handles this scenario by checking to see if the
+        // thing we're we're calling `typeof` on has been imported. If it has,
+        // then we omit `typeof` because we already have the type.
+        if (
+          importSpecifierDeclaration &&
+          ts.isImportSpecifier(importSpecifierDeclaration)
+        ) {
+          return getTypeofFullyQualifiedName(symbol, type.exprName);
+        }
+
         return "typeof " + getTypeofFullyQualifiedName(symbol, type.exprName);
       }
 
