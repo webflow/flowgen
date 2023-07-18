@@ -813,38 +813,20 @@ export const printType = withEnv<any, [any], string>(
           .getSymbolAtLocation(type.exprName)
           ?.getDeclarations()[0];
 
-        // TypeScript d.ts can import _values_ from another module. To get the
-        // type of that value you then use `typeof`. Flow declarations, on the
-        // other hand, CANNOT import _values_. When a file imports a value, the
-        // associated flow declaration includes `type` on the `import` – ie, the
-        // import is ALREADY a type. Because of this we cannot then call
-        // `typeof` on import.
-        // The below conditional handles this scenario by checking to see what
-        // is being imported. If it is a value then we omit the `typeof` operator
-        // as we already have a reference to the type.
+        // TypeScript d.ts can import _values_ from another module, and to get
+        // the type of that value you then use `typeof`. Flow declarations, on
+        // the other hand, CANNOT import _values_. When a file imports a value,
+        // the associated flow declaration includes `type` on the `import` – ie,
+        // the import is ALREADY a type. Because of this we cannot then call
+        // `typeof` on the imported symbol.
+        // The below conditional handles this scenario by checking to see if the
+        // thing we're we're calling `typeof` on has been imported. If it has,
+        // then we omit `typeof` because we already have the type.
         if (
           importSpecifierDeclaration &&
           ts.isImportSpecifier(importSpecifierDeclaration)
         ) {
-          // Get a reference to entity in the external module:
-          const externalType = checker.current.getTypeAtLocation(
-            importSpecifierDeclaration,
-          );
-
-          if (externalType) {
-            const externalDeclaration = externalType
-              .getSymbol()
-              ?.getDeclarations()[0];
-
-            // If the imported thing is a reference to a type literal, then we
-            // do not need to include the `typeof` operator:
-            if (
-              externalDeclaration &&
-              ts.isTypeLiteralNode(externalDeclaration)
-            ) {
-              return getTypeofFullyQualifiedName(symbol, type.exprName);
-            }
-          }
+          return getTypeofFullyQualifiedName(symbol, type.exprName);
         }
 
         return "typeof " + getTypeofFullyQualifiedName(symbol, type.exprName);
