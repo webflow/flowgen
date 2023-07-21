@@ -7,12 +7,11 @@ import ts from "typescript";
 
 const Record = ([key, value]: [any, any], isInexact = opts().inexact) => {
   const valueType = printers.node.printType(value);
+  const keyType = printers.node.printType(key);
 
   switch (key.kind) {
     case ts.SyntaxKind.LiteralType:
-      return `{ ${printers.node.printType(key)}: ${valueType}${
-        isInexact ? ", ..." : ""
-      }}`;
+      return `{ ${keyType}: ${valueType}${isInexact ? ", ..." : ""}}`;
     case ts.SyntaxKind.UnionType:
       if (key.types.every(t => t.kind === ts.SyntaxKind.LiteralType)) {
         const fields = key.types.reduce((acc, t) => {
@@ -23,9 +22,10 @@ const Record = ([key, value]: [any, any], isInexact = opts().inexact) => {
       }
     // Fallthrough
     default:
-      return `{[key: ${printers.node.printType(key)}]: ${valueType}${
-        isInexact ? ", ..." : ""
-      }}`;
+      if (keyType === "empty" && valueType === "empty" && !isInexact) {
+        return `{||}`;
+      }
+      return `{[key: ${keyType}]: ${valueType}${isInexact ? ", ..." : ""}}`;
   }
 };
 
