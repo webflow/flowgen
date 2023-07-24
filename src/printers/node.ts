@@ -80,13 +80,15 @@ type PrintNode =
 
 export function printEntityName(type: ts.EntityName): string {
   if (type.kind === ts.SyntaxKind.QualifiedName) {
-    return (
-      printers.relationships.namespace(
-        type.left.kind === ts.SyntaxKind.Identifier
-          ? type.left.text
-          : printEntityName(type.left),
-      ) + printEntityName(type.right)
-    );
+    const left =
+      type.left.kind === ts.SyntaxKind.Identifier
+        ? type.left.text
+        : printEntityName(type.left);
+    const right = printEntityName(type.right);
+    if (left === "FlowLang" && right === "ObjMap") {
+      return `$ObjMap`;
+    }
+    return printers.relationships.namespace(left) + right;
   } else if (type.kind === ts.SyntaxKind.Identifier) {
     return printers.relationships.namespace(type.text, true);
   } else {
