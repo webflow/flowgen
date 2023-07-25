@@ -25,6 +25,7 @@ type C2<T> = NonNullable<T>
 type D2<T> = ReadonlyArray<T>
 type E2<T> = ReturnType<() => T>
 type F2<T, U> = Record<T, U>
+type J<T, U> = FlowLang.ObjMap<T, U>
 `;
 it("should handle utility types", () => {
   const result = compiler.compileDefinitionString(utilityTypes, {
@@ -61,6 +62,7 @@ it("should handle utility types", () => {
     declare type D2<T> = $ReadOnlyArray<T>;
     declare type E2<T> = $Call<<R>((...args: any[]) => R) => R, () => T>;
     declare type F2<T, U> = { [key: T]: U, ... };
+    declare type J<T, U> = $ObjMap<T, U>;
     "
   `);
   expect(result).toBeValidFlowTypeDeclarations();
@@ -100,6 +102,7 @@ it("should handle utility types in exact mode", () => {
     declare type D2<T> = $ReadOnlyArray<T>;
     declare type E2<T> = $Call<<R>((...args: any[]) => R) => R, () => T>;
     declare type F2<T, U> = { [key: T]: U };
+    declare type J<T, U> = $ObjMap<T, U>;
     "
   `);
   expect(result).toBeValidFlowTypeDeclarations();
