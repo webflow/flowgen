@@ -21,6 +21,18 @@ function padDashes(consumedWidth: number) {
 }
 
 export function error(node: ts.Node, message: ErrorMessage): void {
+  printMessage(node, message, errorPrinter);
+}
+
+export function warn(node: ts.Node, message: ErrorMessage): void {
+  printMessage(node, message, warningPrinter);
+}
+
+export function printMessage(
+  node: ts.Node,
+  message: ErrorMessage,
+  printer: Printer,
+): void {
   if (opts().quiet) return;
   const options = {
     highlightCode: true,
@@ -49,17 +61,33 @@ export function error(node: ts.Node, message: ErrorMessage): void {
     const result = codeFrameColumns(code, babelLocation, options);
     const position = `:${babelLocation.start.line}:${babelLocation.start.column}`;
     const fileName = path.relative(process.cwd(), currentSourceFile.fileName);
-    console.log(
-      chalk.red.bold(
-        `Error ${padDashes(
-          7 + fileName.length + position.length,
-        )} ${fileName}${position}`,
-      ),
-    );
+    printer(chalk, fileName, position);
     console.log("\n");
     console.log(result);
     console.log("\n");
   } else {
     console.log(printErrorMessage(message));
   }
+}
+
+type Printer = (chalk: any, fileName: string, position: string) => void;
+
+function warningPrinter(chalk: any, fileName: string, position: string) {
+  console.log(
+    chalk.yellow.bold(
+      `Warning ${padDashes(
+        7 + fileName.length + position.length,
+      )} ${fileName}${position}`,
+    ),
+  );
+}
+
+function errorPrinter(chalk: any, fileName: string, position: string) {
+  console.log(
+    chalk.red.bold(
+      `Error ${padDashes(
+        7 + fileName.length + position.length,
+      )} ${fileName}${position}`,
+    ),
+  );
 }
