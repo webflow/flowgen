@@ -552,7 +552,7 @@ export const printType = withEnv<any, [any], string>(
           case ts.SyntaxKind.KeyOfKeyword:
             return `$Keys<${printType(type.type)}>`;
           case ts.SyntaxKind.UniqueKeyword:
-            logger.error(type, { type: "UnsupportedUniqueSymbol" });
+            logger.warn(type, { type: "UnsupportedUniqueSymbol" });
             return printType(type.type);
           case ts.SyntaxKind.ReadonlyKeyword:
             if (ts.isArrayTypeNode(type.type)) {
