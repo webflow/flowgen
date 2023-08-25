@@ -535,6 +535,23 @@ export const printType = withEnv<any, [any], string>(
         return "boolean";
 
       case ts.SyntaxKind.IndexedAccessType: {
+        // Convert (typeof X)[keyof typeof X] to $Values<X> or $Values<typeof X>
+        if (
+          ts.isParenthesizedTypeNode(type.objectType) &&
+          ts.isTypeQueryNode(type.objectType.type) &&
+          ts.isIdentifier(type.objectType.type.exprName)
+        ) {
+          const id = type.objectType.type.exprName;
+          if (
+            ts.isTypeOperatorNode(type.indexType) &&
+            type.indexType.operator === ts.SyntaxKind.KeyOfKeyword &&
+            ts.isTypeQueryNode(type.indexType.type) &&
+            ts.isIdentifier(type.indexType.type.exprName) &&
+            type.indexType.type.exprName.escapedText === id.escapedText
+          ) {
+            return `$Values<${printType(type.objectType.type)}>`;
+          }
+        }
         let fn = "$ElementType";
         if (
           ts.isLiteralTypeNode(type.indexType) &&
