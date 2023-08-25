@@ -123,10 +123,7 @@ describe("should handle creating a type from an imported object literal across m
       declare module "@packages/b" {
         import type { foo } from "@packages/a";
 
-        declare export type fooType = $ElementType<
-          foo,
-          $Keys<foo>
-        > | null | void;
+        declare export type fooType = $Values<foo> | null | void;
       }
     `);
 
