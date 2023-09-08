@@ -42,16 +42,20 @@ export const importExportSpecifier = (
   node: ts.ImportSpecifier | ts.ExportSpecifier,
 ): string => {
   if (node.propertyName) {
-    return `${printers.node.printType(
-      node.propertyName,
-    )} as ${printers.node.printType(node.name)}`;
+    const propertyName = printName(node.propertyName);
+    const name = printName(node.name);
+    return `${propertyName} as ${name}`;
   }
 
-  if (node.name.escapedText === "Record") {
+  return printName(node.name);
+};
+
+const printName = (node: ts.Identifier): string => {
+  if (node.escapedText === "Record") {
     return "Record";
   }
 
-  return printers.node.printType(node.name);
+  return printers.node.printType(node);
 };
 
 // TODO: move import here

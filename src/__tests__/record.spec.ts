@@ -24,3 +24,26 @@ it("should handle immutable Record import", () => {
   // throws because `immutable` is not available:
   // expect(result).toBeValidFlowTypeDeclarations();
 });
+
+it("should handle renamed immutable Record import", () => {
+  const ts = dedent`
+    declare module "@packages/systems/core/records/SyncState" {
+      import { Record as ImmRecord } from 'immutable';
+      export const SyncState: ImmRecord.Class;
+    }
+  `;
+
+  const flow = dedent`
+    declare module "@packages/systems/core/records/SyncState" {
+      import type { Record as ImmRecord } from "immutable";
+
+      declare export var SyncState: ImmRecord.Class;
+    }
+  `;
+
+  const result = compiler.compileDefinitionString(ts, { quiet: true });
+
+  expect(beautify(result)).toBe(beautify(flow));
+  // throws because `immutable` is not available:
+  // expect(result).toBeValidFlowTypeDeclarations();
+});
