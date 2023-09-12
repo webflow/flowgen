@@ -341,13 +341,13 @@ export const classDeclaration = <T>(
     node.heritageClauses.forEach(clause => {
       clause.types.forEach(classHeritageClause(classMixins, classImplements));
     });
-    const mixinsMessage =
-      classMixins.length > 0 ? `mixins ${classMixins.join(",")}` : "";
+    const extendsMessage =
+      classMixins.length > 0 ? `extends ${classMixins.join(",")}` : "";
     const classImplementsMessage =
       classImplements.length > 0
         ? ` implements ${classImplements.join(",")}`
         : "";
-    heritage += mixinsMessage;
+    heritage += extendsMessage;
     heritage += classImplementsMessage;
   }
 

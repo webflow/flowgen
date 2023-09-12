@@ -7,7 +7,7 @@ declare type Props = {
   children: React$Node,
   ...
 };
-declare class Component mixins React.Component<Props> {
+declare class Component extends React.Component<Props> {
   render(): React$Node;
 }
 "
