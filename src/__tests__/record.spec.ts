@@ -70,3 +70,29 @@ it("should handle immutable Record.Factory import", () => {
   // throws because `immutable` is not available:
   // expect(result).toBeValidFlowTypeDeclarations();
 });
+
+it("should import RecordFactory only once", () => {
+  const ts = dedent`
+    declare module "@packages/systems/core/records/SyncState" {
+      import { type Record } from 'immutable';
+      import { type List } from 'immutable';
+      export const SyncState: Record.Factory;
+    }
+  `;
+
+  const flow = dedent`
+    declare module "@packages/systems/core/records/SyncState" {
+      import type { Record, RecordFactory } from "immutable";
+
+      import type { List } from 'immutable';
+
+      declare export var SyncState: RecordFactory;
+    }
+  `;
+
+  const result = compiler.compileDefinitionString(ts, { quiet: true });
+
+  expect(beautify(result)).toBe(beautify(flow));
+  // throws because `immutable` is not available:
+  // expect(result).toBeValidFlowTypeDeclarations();
+});
