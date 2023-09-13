@@ -78,7 +78,11 @@ type PrintNode =
   | ts.SetAccessorDeclaration
   | ts.InferTypeNode;
 
-export function printEntityName(type: ts.EntityName): string {
+export const printEntityName = withEnv<
+  { recordFactory: boolean },
+  [ts.EntityName],
+  void
+>((env, type) => {
   if (type.kind === ts.SyntaxKind.QualifiedName) {
     const left =
       type.left.kind === ts.SyntaxKind.Identifier
@@ -88,13 +92,19 @@ export function printEntityName(type: ts.EntityName): string {
     if (left === "FlowLang" && right === "ObjMap") {
       return `$ObjMap`;
     }
+
+    if (left === "Record" && right === "Factory") {
+      env.recordFactory = true;
+      return "RecordFactory";
+    }
+
     return printers.relationships.namespace(left) + right;
   } else if (type.kind === ts.SyntaxKind.Identifier) {
     return printers.relationships.namespace(type.text, true);
   } else {
     return "";
   }
-}
+});
 
 export function printPropertyAccessExpression(
   type: ts.PropertyAccessExpression | ts.Identifier | ts.PrivateIdentifier,

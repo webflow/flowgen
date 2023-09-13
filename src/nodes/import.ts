@@ -3,6 +3,7 @@ import Node from "./node";
 import * as printers from "../printers";
 import { checker } from "../checker";
 import * as ts from "typescript";
+import { withEnv } from "../env";
 
 const TYPE_KEYWORD = "type";
 
@@ -14,7 +15,7 @@ export default class Import extends Node {
   print(): string {
     //TODO: move to printers
     if (this.raw.importClause) {
-      const bindings = this.raw.importClause.namedBindings;
+      const bindings = getNamedBindings(this.raw);
       const name = this.raw.importClause.name;
       const isTypeImport = this.raw.importClause.isTypeOnly;
 
@@ -52,8 +53,8 @@ export default class Import extends Node {
       };
 
       if (name && bindings) {
-        const elements = bindings.elements;
-        if (elements) {
+        if (ts.isNamedImports(bindings)) {
+          const elements = bindings.elements;
           const { enumElems, regularElems } = extractEnumTypeImports(elements);
           const { typeImports, regularImports } =
             collectInlineTypeImports(regularElems);
@@ -88,8 +89,8 @@ export default class Import extends Node {
         } from '${this.raw.moduleSpecifier.text}';\n`;
       }
       if (bindings) {
-        const elements = bindings.elements;
-        if (elements) {
+        if (ts.isNamedImports(bindings)) {
+          const elements = bindings.elements;
           const { enumElems, regularElems } = extractEnumTypeImports(elements);
           const { typeImports, regularImports } =
             collectInlineTypeImports(regularElems);
@@ -150,3 +151,31 @@ const collectInlineTypeImports = elements => {
 
   return { typeImports, regularImports };
 };
+
+const getNamedBindings = withEnv<
+  { recordFactory: boolean },
+  [RawNode],
+  ts.NamedImportBindings
+>((env, node) => {
+  if (node.importClause) {
+    const bindings = node.importClause.namedBindings;
+    if (env.recordFactory && node.moduleSpecifier.text === "immutable") {
+      // When we have encountered the `Record.Factory` type,
+      // we rename it to `RecordFactory` to match the flow typedefs.
+      // Since `RecordFactory` doesn't exist in TypeScript,
+      // we need to add an import for it here.
+      // We add the TYPE_KEYWORD first so that it becomes an "inline type import"
+      bindings.elements.push(
+        ts.factory.createImportSpecifier(
+          undefined,
+          ts.factory.createIdentifier(TYPE_KEYWORD),
+        ),
+        ts.factory.createImportSpecifier(
+          undefined,
+          ts.factory.createIdentifier("RecordFactory"),
+        ),
+      );
+    }
+    return bindings;
+  }
+});
