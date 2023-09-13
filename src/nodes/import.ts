@@ -175,6 +175,7 @@ const getNamedBindings = withEnv<
           ts.factory.createIdentifier("RecordFactory"),
         ),
       );
+      env.recordFactory = false;
     }
     return bindings;
   }
